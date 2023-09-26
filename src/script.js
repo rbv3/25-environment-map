@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
+import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import * as dat from 'lil-gui'
 
@@ -8,6 +9,7 @@ import * as dat from 'lil-gui'
 */
 const gltfLoader = new GLTFLoader()
 const cubeTextureLoader = new THREE.CubeTextureLoader()
+const rgbeLoader = new RGBELoader()
 
 /**
  * Base
@@ -21,11 +23,21 @@ const canvas = document.querySelector('canvas.webgl')
 
 // Scene
 const scene = new THREE.Scene()
-scene.backgroundBlurriness = 0.1
+scene.backgroundBlurriness = 0
 scene.backgroundIntensity = 5
 
 gui.add(scene, 'backgroundBlurriness').min(0).max(1)
 gui.add(scene, 'backgroundIntensity').min(0).max(10)
+
+// HDR equirectangular
+rgbeLoader.load('/environmentMaps/0/2k.hdr', (envMap) => {
+    console.log(envMap);
+    envMap.mapping = THREE.EquirectangularReflectionMapping
+
+    scene.background = envMap
+    scene.environment = envMap
+})
+
 /*
     Utils
 */
@@ -46,17 +58,17 @@ gui.add(global, 'envMapIntensity')
     .max(10)
     .onChange(updateAllMaterials)
 // LDR Cube texture
-const environmentMap = cubeTextureLoader.load([
-    '/environmentMaps/1/px.png',
-    '/environmentMaps/1/nx.png',
-    '/environmentMaps/1/py.png',
-    '/environmentMaps/1/ny.png',
-    '/environmentMaps/1/pz.png',
-    '/environmentMaps/1/nz.png',
-])
+// const environmentMap = cubeTextureLoader.load([
+//     '/environmentMaps/1/px.png',
+//     '/environmentMaps/1/nx.png',
+//     '/environmentMaps/1/py.png',
+//     '/environmentMaps/1/ny.png',
+//     '/environmentMaps/1/pz.png',
+//     '/environmentMaps/1/nz.png',
+// ])
 
-scene.environment = environmentMap
-scene.background = environmentMap
+// scene.environment = environmentMap
+// scene.background = environmentMap
 
 /**
  * Torus Knot
