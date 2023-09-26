@@ -21,7 +21,11 @@ const canvas = document.querySelector('canvas.webgl')
 
 // Scene
 const scene = new THREE.Scene()
+scene.backgroundBlurriness = 0.1
+scene.backgroundIntensity = 5
 
+gui.add(scene, 'backgroundBlurriness').min(0).max(1)
+gui.add(scene, 'backgroundIntensity').min(0).max(10)
 /*
     Utils
 */
