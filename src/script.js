@@ -7,11 +7,13 @@ import * as dat from 'lil-gui'
     Loader
 */
 const gltfLoader = new GLTFLoader()
+const cubeTextureLoader = new THREE.CubeTextureLoader()
 
 /**
  * Base
  */
 // Debug
+const global = {}
 const gui = new dat.GUI()
 
 // Canvas
@@ -20,13 +22,50 @@ const canvas = document.querySelector('canvas.webgl')
 // Scene
 const scene = new THREE.Scene()
 
+/*
+    Utils
+*/
+const updateAllMaterials = () => {
+    scene.traverse((child) => {
+        if(child.isMesh && child.material.isMeshStandardMaterial) {
+            child.material.envMapIntensity = global.envMapIntensity
+        }
+    })
+}
+
+/*
+    Environment Map
+*/
+global.envMapIntensity = 1;
+gui.add(global, 'envMapIntensity')
+    .min(0)
+    .max(10)
+    .onChange(updateAllMaterials)
+// LDR Cube texture
+const environmentMap = cubeTextureLoader.load([
+    '/environmentMaps/1/px.png',
+    '/environmentMaps/1/nx.png',
+    '/environmentMaps/1/py.png',
+    '/environmentMaps/1/ny.png',
+    '/environmentMaps/1/pz.png',
+    '/environmentMaps/1/nz.png',
+])
+
+scene.environment = environmentMap
+scene.background = environmentMap
+
 /**
  * Torus Knot
  */
 const torusKnot = new THREE.Mesh(
     new THREE.TorusKnotGeometry(1, 0.4, 100, 16),
-    new THREE.MeshBasicMaterial()
+    new THREE.MeshStandardMaterial({
+        roughness: 0.3,
+        metalness: 1,
+        color: "#0xaaaa"
+    })
 )
+torusKnot.position.x = -4
 torusKnot.position.y = 4
 scene.add(torusKnot)
 
@@ -38,6 +77,8 @@ gltfLoader.load(
     (gltf) => {
         gltf.scene.scale.set(10, 10, 10)
         scene.add(gltf.scene)
+
+        updateAllMaterials()
     }
 )
 
