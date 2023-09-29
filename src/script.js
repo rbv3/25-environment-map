@@ -1,5 +1,7 @@
 import * as THREE from 'three'
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
+import { GroundProjectedSkybox } from 'three/examples/jsm/objects/GroundProjectedSkybox'
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
+import { EXRLoader } from 'three/examples/jsm/loaders/EXRLoader'
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import * as dat from 'lil-gui'
@@ -8,8 +10,10 @@ import * as dat from 'lil-gui'
     Loader
 */
 const gltfLoader = new GLTFLoader()
+const exrLoader = new EXRLoader()
 const cubeTextureLoader = new THREE.CubeTextureLoader()
 const rgbeLoader = new RGBELoader()
+const textureLoader = new THREE.TextureLoader()
 
 /**
  * Base
@@ -24,19 +28,39 @@ const canvas = document.querySelector('canvas.webgl')
 // Scene
 const scene = new THREE.Scene()
 scene.backgroundBlurriness = 0
-scene.backgroundIntensity = 5
+scene.backgroundIntensity = 1
 
 gui.add(scene, 'backgroundBlurriness').min(0).max(1)
 gui.add(scene, 'backgroundIntensity').min(0).max(10)
 
-// HDR equirectangular
-rgbeLoader.load('/environmentMaps/0/2k.hdr', (envMap) => {
-    console.log(envMap);
-    envMap.mapping = THREE.EquirectangularReflectionMapping
+// LDR equirectangular
+const environmentMap = textureLoader.load('/environmentMaps/coksi.jpg')
+environmentMap.mapping = THREE.EquirectangularReflectionMapping
+environmentMap.colorSpace = THREE.SRGBColorSpace
+scene.background = environmentMap
+scene.environment = environmentMap
 
-    scene.background = envMap
-    scene.environment = envMap
-})
+// EXR Loader equirectangular
+// exrLoader.load('/environmentMaps/nvidiaCanvas-4k.exr', (envMap) => {
+//     envMap.mapping = THREE.EquirectangularReflectionMapping
+//     scene.background = envMap
+//     scene.environment = envMap
+// })
+
+// HDR equirectangular
+// rgbeLoader.load('/environmentMaps/2/2k.hdr', (envMap) => {
+//     envMap.mapping = THREE.EquirectangularReflectionMapping
+
+//     scene.environment = envMap
+
+//     const skybox = new GroundProjectedSkybox(envMap)
+//     skybox.scale.setScalar(50)
+//     skybox.radius = 120
+//     skybox.height = 11
+//     gui.add(skybox, 'radius', 1, 200, 0.1).name('skybox radius')
+//     gui.add(skybox, 'height', 1, 100, 0.1).name('skybox height')
+//     scene.add(skybox)
+// })
 
 /*
     Utils
